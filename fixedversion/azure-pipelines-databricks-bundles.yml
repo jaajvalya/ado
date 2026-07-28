@@ -1,0 +1,52 @@
+# Consumer CD pipeline: Databricks Asset Bundles via DevOpsBase
+# FIXED: main-only trigger (no PR deploy); explicit required parameters
+# (no silent foreign-org defaults); expects sequential DEV → QA → PROD.
+#
+# See docs/DEVOPSBASE-CONTRACT.md and PLACEHOLDER-SETUP-GUIDE.md.
+#
+# Before first run: replace every <PLACEHOLDER> below with org values.
+
+trigger:
+  branches:
+    include:
+      - main
+  paths:
+    include:
+      - bundles/*
+      - azure-pipelines-databricks-bundles.yml
+
+# Intentionally NO pr: block — Pull Requests must not deploy.
+# PR validation lives in azure-pipelines-ci-pr.yml.
+
+resources:
+  repositories:
+    - repository: DevOpsBase
+      type: git
+      name: "<AZURE_DEVOPS_PROJECT>/DevOpsBase" # replace
+      ref: main
+
+extends:
+  template: databricks-asset-bundle-cicd-base.yaml@DevOpsBase
+  parameters:
+    # Sequential promotion: DEV then QA then PROD (see DEVOPSBASE-CONTRACT.md).
+    # If the base template offers a flag for this, set it here (name may vary):
+    # deploySequential: true
+
+    deployDev: true
+    deployQa: true
+    deployProd: true
+
+    bundlePaths:
+      - bundles/sample_data_pipeline # replace with real bundles; remove sample before prod
+
+    # Required overrides — set all of these; do not rely on template defaults
+    # from another organization.
+    nonProdPool: <NONPROD_AGENT_POOL>
+    prodPool: <PROD_AGENT_POOL>
+    variableGroupDev: <DEV_VARIABLE_GROUP>
+    variableGroupQa: <QA_VARIABLE_GROUP>
+    variableGroupProd: <PROD_VARIABLE_GROUP>
+    azureServiceConnectionDev: <DEV_SERVICE_CONNECTION>
+    azureServiceConnectionQa: <QA_SERVICE_CONNECTION>
+    azureServiceConnectionProd: <PROD_SERVICE_CONNECTION>
+    prodEnvironment: <PROD_ADO_ENVIRONMENT>

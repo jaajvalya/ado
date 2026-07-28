@@ -1,0 +1,50 @@
+# Databricks Asset Bundle — sample_data_pipeline (fixed, env-ready template)
+# Replace folder/name before production. Host/token come from the pipeline.
+# BUNDLE_TARGET selects the target (-t).
+
+bundle:
+  name: sample_data_pipeline
+
+include:
+  - resources/*.yml
+
+# Shared non-secret defaults; override per target below.
+variables:
+  catalog: sample_dev
+  schema: etl
+  cluster_policy_id: "" # set per env; empty = no policy (dev only)
+  node_type_id: Standard_DS3_v2
+  num_workers: "2"
+  spark_version: 14.3.x-scala2.12
+
+targets:
+  dev:
+    mode: development
+    default: true
+    variables:
+      catalog: sample_dev
+      schema: etl
+      cluster_policy_id: <DEV_CLUSTER_POLICY_ID>
+      node_type_id: Standard_DS3_v2
+      num_workers: "1"
+      spark_version: 14.3.x-scala2.12
+
+  qa:
+    mode: production
+    variables:
+      catalog: sample_qa
+      schema: etl
+      cluster_policy_id: <QA_CLUSTER_POLICY_ID>
+      node_type_id: Standard_DS3_v2
+      num_workers: "2"
+      spark_version: 14.3.x-scala2.12
+
+  prod:
+    mode: production
+    variables:
+      catalog: sample_prod
+      schema: etl
+      cluster_policy_id: <PROD_CLUSTER_POLICY_ID>
+      node_type_id: Standard_DS3_v2
+      num_workers: "3"
+      spark_version: 14.3.x-scala2.12

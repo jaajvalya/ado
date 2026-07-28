@@ -1,0 +1,8 @@
+# Require review from the owning team on protected paths.
+# Replace @org/team-data-platform with your ADO/GitHub group once known.
+
+* @org/team-data-platform
+
+/azure-pipelines-*.yml @org/team-data-platform
+/bundles/ @org/team-data-platform
+/fixedversion/ @org/team-data-platform

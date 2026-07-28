@@ -1,0 +1,39 @@
+What was fixed in this folder (vs repo-root originals)
+======================================================
+
+Highlighted gaps addressed:
+
+1. Plan vs reality
+   - Added azure-pipelines-ci-pr.yml (secret scan → lint → unit → bundle validate)
+   - Added tests/, regression/, regression/smoke/, pyproject.toml, requirements-dev.txt
+   - Pre-commit now includes ruff + gitleaks
+
+2. Sequential vs parallel contradiction
+   - ADO-CICD-Adoption-Plan.md §2 and §5 both require DEV → QA → PROD
+   - docs/DEVOPSBASE-CONTRACT.md records the sequential requirement for DevOpsBase
+
+3. Key Vault vs plain-text
+   - SECRETS-POLICY.md: DATABRICKS_HOST / BUNDLE_TARGET = plain; secrets = KV / SC
+   - PLACEHOLDER-SETUP-GUIDE.md: separate steps for VGs (#3) and Key Vault (#4)
+
+4. Pipelines not runnable / wrong defaults
+   - CD parameters are required and explicit (no commented foreign-org defaults)
+   - Org placeholders still must be filled (cannot invent real pool/VG names)
+
+5. PR may trigger full CD
+   - azure-pipelines-databricks-bundles.yml has NO pr: trigger
+   - GIT-WORKFLOW-GUIDE.md documents PR CI vs main-only CD split
+
+6. Sample bundle not env-ready
+   - Per-env catalog/schema, cluster policy_id, node size via bundle variables
+   - Job passes catalog/schema parameters into the notebook
+
+Also added: CODEOWNERS, .env.example, docs/ROLLBACK.md,
+docs/BRANCH-POLICY-CHECKLIST.md, narrower .gitleaks.toml allowlist,
+expanded .gitignore, hotfix path in the workflow guide.
+
+Not claimed fixed (still requires humans / DevOps):
+- Real ADO project names, pools, variable groups, service connections
+- Confirming DevOpsBase sequential mode exists and is enabled
+- Enabling Required branch policies in the ADO UI
+- Replacing sample_data_pipeline with production workloads

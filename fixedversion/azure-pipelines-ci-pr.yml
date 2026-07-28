@@ -1,0 +1,108 @@
+# PR CI only — lint, unit tests, bundle validate, secret scan.
+# Does NOT deploy to any Databricks environment.
+# Register as a Required Build Validation on `main`.
+#
+# TODO: set pool to a Linux-capable non-prod agent pool.
+
+trigger: none
+
+pr:
+  branches:
+    include:
+      - main
+
+pool:
+  name: <NONPROD_AGENT_POOL> # Linux-capable pool required for gitleaks + bash steps
+
+variables:
+  GITLEAKS_VERSION: "8.18.4"
+  PYTHON_VERSION: "3.11"
+
+stages:
+  - stage: SecretScan
+    displayName: Secret scan
+    jobs:
+      - job: gitleaks
+        displayName: Gitleaks
+        steps:
+          - checkout: self
+            fetchDepth: 0
+
+          - script: |
+              set -euo pipefail
+              curl -sSL -o gitleaks.tar.gz \
+                "https://github.com/gitleaks/gitleaks/releases/download/v${GITLEAKS_VERSION}/gitleaks_${GITLEAKS_VERSION}_linux_x64.tar.gz"
+              tar -xzf gitleaks.tar.gz gitleaks
+              chmod +x gitleaks
+              ./gitleaks detect \
+                --source . \
+                --config .gitleaks.toml \
+                --redact \
+                --report-format sarif \
+                --report-path "$(Build.ArtifactStagingDirectory)/gitleaks-report.sarif" \
+                --exit-code 1
+            displayName: Install and run gitleaks
+
+          - publish: $(Build.ArtifactStagingDirectory)/gitleaks-report.sarif
+            artifact: gitleaks-report
+            condition: always()
+            displayName: Publish gitleaks SARIF
+
+  - stage: LintAndUnit
+    displayName: Lint and unit tests
+    dependsOn: SecretScan
+    jobs:
+      - job: python_quality
+        displayName: Ruff + pytest
+        steps:
+          - task: UsePythonVersion@0
+            inputs:
+              versionSpec: $(PYTHON_VERSION)
+
+          - script: |
+              set -euo pipefail
+              python -m pip install --upgrade pip
+              pip install -r requirements-dev.txt
+              ruff check .
+              ruff format --check .
+              pytest -q
+            displayName: Install deps, lint, unit test
+
+  - stage: BundleValidate
+    displayName: Bundle validate
+    dependsOn: LintAndUnit
+    jobs:
+      - job: validate_bundles
+        displayName: databricks bundle validate
+        steps:
+          - task: UsePythonVersion@0
+            inputs:
+              versionSpec: $(PYTHON_VERSION)
+
+          - script: |
+              set -euo pipefail
+              python -m pip install --upgrade pip
+              pip install databricks-cli
+              # Validate each bundle folder that contains databricks.yml (dev target).
+              # Uses whatever auth the agent already has, or DATABRICKS_HOST + token
+              # from a non-prod variable group if you link one to this pipeline.
+              if [ -z "${DATABRICKS_HOST:-}" ]; then
+                echo "DATABRICKS_HOST not set — running bundle validate offline where supported."
+                echo "Link <DEV_VARIABLE_GROUP> to this pipeline for full validate against dev."
+              fi
+              found=0
+              for d in bundles/*/; do
+                if [ -f "${d}databricks.yml" ]; then
+                  found=1
+                  echo "Validating ${d}"
+                  (cd "$d" && databricks bundle validate -t dev)
+                fi
+              done
+              if [ "$found" -eq 0 ]; then
+                echo "No bundles/*/databricks.yml found" >&2
+                exit 1
+              fi
+            displayName: Validate all bundles
+            env:
+              DATABRICKS_HOST: $(DATABRICKS_HOST)
+              DATABRICKS_TOKEN: $(DATABRICKS_TOKEN)

@@ -1,0 +1,25 @@
+# Placeholder job — replace with real ETL definition.
+# Uses bundle variables for catalog, cluster policy, and size per target.
+resources:
+  jobs:
+    sample_etl_job:
+      name: sample_etl_job
+      tasks:
+        - task_key: extract_transform_load
+          notebook_task:
+            notebook_path: ../src/sample_notebook.py
+            base_parameters:
+              catalog: ${var.catalog}
+              schema: ${var.schema}
+          job_cluster_key: default_cluster
+      job_clusters:
+        - job_cluster_key: default_cluster
+          new_cluster:
+            spark_version: ${var.spark_version}
+            node_type_id: ${var.node_type_id}
+            num_workers: ${var.num_workers}
+            policy_id: ${var.cluster_policy_id}
+      schedule:
+        quartz_cron_expression: "0 0 6 * * ?"
+        timezone_id: "UTC"
+        pause_status: PAUSED

@@ -1,0 +1,26 @@
+title = "gitleaks config for ado repo (fixed — explicit allowlist)"
+
+[extend]
+useDefault = true
+
+[allowlist]
+description = "Explicit known-safe placeholders only (avoid broad <UPPER> regex)"
+regexes = [
+  '''<AZURE_DEVOPS_PROJECT>''',
+  '''<NONPROD_AGENT_POOL>''',
+  '''<PROD_AGENT_POOL>''',
+  '''<DEV_VARIABLE_GROUP>''',
+  '''<QA_VARIABLE_GROUP>''',
+  '''<PROD_VARIABLE_GROUP>''',
+  '''<DEV_SERVICE_CONNECTION>''',
+  '''<QA_SERVICE_CONNECTION>''',
+  '''<PROD_SERVICE_CONNECTION>''',
+  '''<PROD_ADO_ENVIRONMENT>''',
+  '''<DEV_CLUSTER_POLICY_ID>''',
+  '''<QA_CLUSTER_POLICY_ID>''',
+  '''<PROD_CLUSTER_POLICY_ID>''',
+  '''\$\{\{\s*parameters\.''',
+]
+paths = [
+  '''(?i)\.example$''',
+]

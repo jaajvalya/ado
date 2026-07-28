@@ -1,0 +1,287 @@
+Validation Issues & Gaps
+========================
+Repo: ado (Azure DevOps CI/CD for Databricks)
+Date: 2026-07-28
+Scope: ADO-CICD-Adoption-Plan.md, GIT-WORKFLOW-GUIDE.md, SECRETS-POLICY.md,
+       PLACEHOLDER-SETUP-GUIDE.md, azure-pipelines-*.yml, .pre-commit-config.yaml,
+       .gitleaks.toml, .gitignore, bundles/sample_data_pipeline/*
+
+Verdict: The documentation set is coherent as a starter adoption kit, but the
+repo is not yet an executable CI/CD implementation of the plan. Most quality
+gates, regression automation, and org-specific wiring remain missing or
+contradictory.
+
+
+------------------------------------------------------------------------------
+1. CRITICAL — Plan vs. what actually exists
+------------------------------------------------------------------------------
+
+1.1 Expectation #3 (Regression Test Automation) is unmet
+    - Plan requires a dedicated QA regression suite (data contracts, row-count/
+      schema diffs, business-rule assertions) as its own pipeline stage.
+    - No regression tests, scripts, jobs, or pipeline stage exist in this repo.
+    - No post-deploy smoke/integration tests for DEV or PROD either.
+
+1.2 PR CI quality gates from Plan §2 are not implemented
+    - Documented flow: lint → unit tests → bundle validate → build artifact.
+    - Actual PR automation: only azure-pipelines-ci-secret-scan.yml (and even
+      that still has an unresolved agent-pool placeholder).
+    - No lint (ruff/black/flake8), no pytest, no bundle-validate CI job, no
+      build-artifact stage in this repo.
+
+1.3 Plan §2 workflow contradicts Plan §5 / DevOpsBase behavior
+    - §2 shows sequential: Deploy DEV → smoke → Promote QA → regression →
+      approval → Prod.
+    - §5 states Dev and QA run in parallel with no ordering dependency; Prod
+      only dependsOn QA.
+    - Parallel Dev/QA skips the "smoke in DEV before QA" and "promote after
+      DEV success" model. Docs need one agreed flow.
+
+1.4 Key Vault requirement vs. setup guide
+    - Plan and SECRETS-POLICY require Azure Key Vault-backed variable groups.
+    - PLACEHOLDER-SETUP-GUIDE #3 instructs creating plain-text DATABRICKS_HOST
+      and BUNDLE_TARGET variables, with no Key Vault link steps.
+    - Tokens are said to come from service connections (good), but KV linkage
+      for any secret vars is undocumented in the setup guide.
+
+1.5 Pipeline cannot run as checked in
+    - azure-pipelines-databricks-bundles.yml still has:
+      - "<AZURE_DEVOPS_PROJECT>/DevOpsBase"
+      - All pool / variable group / service connection / prodEnvironment
+        overrides commented out (falls through to another org's defaults).
+      - Sample-only bundlePaths.
+    - azure-pipelines-ci-secret-scan.yml pool is still <NONPROD_AGENT_POOL>.
+    - Neither pipeline is production-ready until PLACEHOLDER-SETUP-GUIDE is
+      completed end-to-end.
+
+
+------------------------------------------------------------------------------
+2. HIGH — Workflow & policy gaps
+------------------------------------------------------------------------------
+
+2.1 PR may trigger full CD, not just validate
+    - GIT-WORKFLOW-GUIDE claims PR build validation will include
+      `databricks bundle validate` via azure-pipelines-databricks-bundles.yml.
+    - That YAML `extends` DevOpsBase with deployDev/deployQa/deployProd: true
+      and has a `pr:` trigger on bundles/*.
+    - Unless DevOpsBase gates deploys on Build.Reason == PullRequest, PRs could
+      attempt real deploys. This contract is not documented locally (DevOpsBase
+      is external and not present in-repo).
+
+2.2 Secret-scan enforcement is incomplete by design until ADO policy is set
+    - SECRETS-POLICY correctly notes Build Validation must be Required.
+    - Nothing in-repo can verify that policy exists; until an admin does it,
+      merges are not blocked by the scan.
+    - PLACEHOLDER-SETUP-GUIDE does not list "register secret-scan + required
+      branch policy" in its numbered checklist (only referenced from
+      SECRETS-POLICY). Easy to miss during setup.
+
+2.3 Branch / PR policies are documented but not codified
+    - Required reviewers, no self-approval, squash-merge default, bypass
+      restrictions are guide-only.
+    - No CODEOWNERS, no exported branch-policy checklist as a required setup
+      item with owners/dates, no automated verification.
+
+2.4 Hotfix path is incomplete
+    - Branch naming allows hotfix/*, and bypass is described for emergencies.
+    - No documented path for urgent PROD fix (e.g. hotfix branch → expedited
+      QA → Prod approval), or whether hotfixes skip Dev parallel deploy.
+
+2.5 DATABRICKS_HOST classified inconsistently
+    - SECRETS-POLICY treats hardcoded DATABRICKS_HOST like a secret concern and
+      lists it with tokens under "where secrets live" (Key Vault).
+    - PLACEHOLDER-SETUP-GUIDE says store DATABRICKS_HOST as plain text.
+    - Host URLs are usually non-secret; clarify what must be in Key Vault vs
+      Library plain variables to avoid misconfiguration.
+
+
+------------------------------------------------------------------------------
+3. HIGH — Missing implementation for stated engineering standards
+------------------------------------------------------------------------------
+
+3.1 No unit-test harness
+    - Plan: pytest + Databricks Connect or local Spark.
+    - Missing: tests/, pyproject.toml / requirements.txt, CI step.
+
+3.2 No lint/format tooling
+    - Plan: black, ruff/flake8 as pre-commit + CI.
+    - .pre-commit-config.yaml only runs gitleaks.
+    - No ruff/black config files.
+
+3.3 No data-quality / contract testing
+    - Plan mentions Great Expectations, dbt tests, or DLT expectations.
+    - None present; sample notebook is a print statement only.
+
+3.4 No shared library / wheel packaging pattern
+    - Plan: package shared logic as wheels, not copy-pasted cells.
+    - Sample bundle has no artifacts/python wheel layout.
+
+3.5 Sample bundle is not environment-ready
+    - targets (dev/qa/prod) have no workspace host, run_as, variables,
+      catalog/schema overrides, cluster-size overrides, or permissions.
+    - Unity Catalog isolation (catalog-per-env) from the plan is not reflected.
+    - Job cluster is hardcoded (spark_version, node_type, num_workers) with no
+      cluster policy_id (plan calls for policies for cost control).
+    - No libraries, job parameters, or notifications.
+    - schedule pause_status: PAUSED is fine for a sample, but there is no
+      guidance on promoting schedules per environment.
+
+3.6 Rollback is described, not operable
+    - Plan: redeploy previous artifact/bundle version.
+    - No runbook, no note on how DevOpsBase versions/retains artifacts, no
+      "how to roll back" section in GIT or PLACEHOLDER guides.
+
+3.7 Monitoring / alerting after Prod deploy
+    - Plan ends with "monitor/alert".
+    - No alert gates, Azure Monitor checks, or on-call handoff docs.
+
+
+------------------------------------------------------------------------------
+4. MEDIUM — Scripts & config defects / risks
+------------------------------------------------------------------------------
+
+4.1 Secret-scan agent assumptions
+    - Install step downloads linux_x64 gitleaks and uses bash `set -e`.
+    - Will fail on Windows agent pools. Org pool choice is unknown; guide
+      should require a Linux-capable pool or provide a Windows install path.
+
+4.2 Network dependency for gitleaks in CI
+    - CI curls GitHub releases every run. Air-gapped / restricted agents will
+      fail. No cached tool / ADO tool installer / pipeline cache strategy.
+
+4.3 Broad gitleaks allowlist
+    - .gitleaks.toml allows any `<UPPER_SNAKE>` token via `<[A-Z0-9_]+>`.
+    - Intentional for placeholders, but also suppresses detection if someone
+      wraps sensitive material in angle brackets. Prefer an explicit list of
+      known placeholders.
+
+4.4 .gitignore gaps for Databricks / Python projects
+    - Missing common entries such as: .databricks/, .pytest_cache/, .ruff_cache/,
+      .mypy_cache/, dist/, build/, *.egg-info/, .coverage, htmlcov/,
+      spark-warehouse/, metastore_db/, .python-version
+    - *.tfvars is ignored though no Terraform exists (harmless); wheel/build
+      outputs are not ignored.
+
+4.5 Path triggers may miss important changes
+    - Databricks CD pipeline triggers only on bundles/*.
+    - Changes to azure-pipelines-databricks-bundles.yml itself, or to shared
+      root config, will not start CD. May be intentional; not documented.
+
+4.6 Fragile line-number references in PLACEHOLDER-SETUP-GUIDE
+    - Table cites exact lines (e.g. :36, :51-52). Edits will desync the guide
+      from the YAML. Prefer anchors/parameter names over line numbers.
+
+4.7 Pre-commit pin / supply chain
+    - gitleaks v8.18.4 pinned in both pre-commit and CI (good consistency).
+    - No documented process to bump versions; older pin may miss new detectors.
+
+4.8 Sample notebook / job path unverified in CI
+    - No `databricks bundle validate` evidence in-repo.
+    - Placeholder content will "succeed" structurally but provides no real
+      pipeline confidence.
+
+4.9 External DevOpsBase is a single point of opacity
+    - Referenced files (databricks-asset-bundle-cicd-base.yaml,
+      deploy template, databricks-asset-bundle-cicd.md) are not vendored or
+      summarized here.
+    - Cannot validate stage order, PR behavior, required parameters, auth
+      steps, or artifact retention without that repo.
+
+
+------------------------------------------------------------------------------
+5. MEDIUM — Documentation completeness / usability
+------------------------------------------------------------------------------
+
+5.1 No README.md
+    - Newcomers have no index of plan → workflow → secrets → placeholders →
+      pipelines. Discovery depends on knowing filenames.
+
+5.2 No .env.example
+    - SECRETS-POLICY allows .env.example with placeholders; none provided for
+      local Databricks CLI / Connect setup.
+
+5.3 Local developer prerequisites incomplete
+    - Guides cover git clone and pre-commit install.
+    - Missing: Databricks CLI install, auth for local `bundle validate`,
+      Python version, how to run unit tests once they exist.
+
+5.4 Feature flags mentioned in Plan §4 with no follow-through
+    - "Decouple deploy from release using feature flags" has no pattern,
+      tool, or example in bundles/docs.
+
+5.5 Repo strategy undecided
+    - Plan asks monorepo vs multi-repo; this repo assumes monorepo with
+      bundles/* but never records the decision.
+
+5.6 Audience / RACI for setup unfinished work
+    - PLACEHOLDER items still owned by "DevOps team / client" with no tracker,
+      owners, or Definition of Done checklist beyond the guide narrative.
+
+5.7 Duplicate horizontal rule / minor polish in Adoption Plan §4–§5
+    - Harmless formatting noise (`---` repeated); suggests unfinished editing.
+
+
+------------------------------------------------------------------------------
+6. LOW — Consistency & clarity nits
+------------------------------------------------------------------------------
+
+6.1 GIT guide Part 2 says Developer owns steps 1–6 and 9, but also mentions
+    completing merge (step 8) "if org allows" — slightly overlapping with
+    Approver/Team Lead ownership; clarify default org convention.
+
+6.2 Plan §4 says start with approval only on Prod; §3 table still shows
+    optional QA approver — OK as progressive advice, but §5 "gated by
+    passing regression" implies regression exists (it does not).
+
+6.3 SECRETS-POLICY lists "Credential Scanner extension" as optional with no
+    license/enable steps or when it is required.
+
+6.4 Sample job name sample_etl_job / folder sample_data_pipeline — fine as
+    placeholders, but PLACEHOLDER #6 should explicitly say "delete sample
+    before first real prod deploy" to avoid shipping a hello-world job.
+
+
+------------------------------------------------------------------------------
+7. Gap checklist (actionable summary)
+------------------------------------------------------------------------------
+
+[ ] Resolve Dev→QA sequential vs parallel contradiction in plan vs template
+[ ] Fill all ADO placeholders (DevOpsBase path, pools, VGs, SCs, Prod env)
+[ ] Register both pipelines; make secret-scan a Required build validation
+[ ] Link variable groups to Key Vault where secrets belong; clarify HOST vs token
+[ ] Add PR CI: lint, unit tests, databricks bundle validate (non-deploy)
+[ ] Confirm DevOpsBase does NOT deploy on Pull Request builds
+[ ] Implement QA regression suite + wire as gate before Prod
+[ ] Add DEV/PROD smoke tests and basic monitoring expectations
+[ ] Extend pre-commit beyond gitleaks (ruff/black per plan)
+[ ] Enrich bundle targets with per-env catalog/cluster/policy/variables
+[ ] Add rollback runbook tied to artifact/version behavior
+[ ] Add README index + local CLI/dev setup + .env.example
+[ ] Add CODEOWNERS / explicit branch-policy setup checklist item
+[ ] Document hotfix and bypass follow-up process end-to-end
+[ ] Harden secret-scan for agent OS + tool install resilience
+[ ] Narrow gitleaks allowlist to explicit placeholders
+[ ] Expand .gitignore for Databricks/Python artifacts
+[ ] Replace or remove sample_data_pipeline before real workloads ship
+[ ] Vendor or link a short DevOpsBase parameter/behavior contract locally
+
+
+------------------------------------------------------------------------------
+8. Files reviewed
+------------------------------------------------------------------------------
+
+- ADO-CICD-Adoption-Plan.md
+- GIT-WORKFLOW-GUIDE.md
+- SECRETS-POLICY.md
+- PLACEHOLDER-SETUP-GUIDE.md
+- azure-pipelines-databricks-bundles.yml
+- azure-pipelines-ci-secret-scan.yml
+- .pre-commit-config.yaml
+- .gitleaks.toml
+- .gitignore
+- bundles/sample_data_pipeline/databricks.yml
+- bundles/sample_data_pipeline/resources/sample_job.yml
+- bundles/sample_data_pipeline/src/sample_notebook.py
+
+Not present (noted as gaps): README.md, tests/, lint configs, requirements/
+pyproject, regression assets, DevOpsBase sources, CODEOWNERS.

@@ -1,0 +1,33 @@
+[project]
+name = "ado-databricks-fixed"
+version = "0.1.0"
+description = "Fixed-version CI tooling and sample bundle helpers"
+requires-python = ">=3.11"
+dependencies = []
+
+[project.optional-dependencies]
+dev = [
+  "pytest>=8.0",
+  "ruff>=0.6",
+  "pre-commit>=3.7",
+]
+
+[tool.pytest.ini_options]
+testpaths = ["tests", "regression"]
+pythonpath = [
+  ".",
+  "bundles/sample_data_pipeline/src",
+  "regression",
+  "regression/smoke",
+]
+
+[tool.ruff]
+line-length = 100
+target-version = "py311"
+extend-exclude = [
+  ".venv",
+  "bundles/sample_data_pipeline/src/sample_notebook.py",
+]
+
+[tool.ruff.lint]
+select = ["E", "F", "I", "UP", "B"]
