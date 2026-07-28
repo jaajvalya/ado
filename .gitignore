@@ -1,0 +1,29 @@
+# Secrets & credentials - never commit these
+*.pem
+*.key
+*.pfx
+*.p12
+*.crt
+*.cer
+*.der
+.env
+.env.*
+!.env.example
+*credentials*.json
+*secrets*.json
+*serviceprincipal*.json
+*service-principal*.json
+*.token
+.databrickscfg
+databricks.cfg
+*.tfvars
+!*.tfvars.example
+
+# Common local/build noise
+.venv/
+venv/
+__pycache__/
+*.pyc
+.vscode/
+.idea/
+.DS_Store

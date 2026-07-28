@@ -1,0 +1,16 @@
+title = "gitleaks config for ado repo"
+
+[extend]
+# Start from gitleaks' maintained default rule set (PATs, cloud keys, private
+# keys, generic high-entropy secrets, etc.) and only add exceptions below.
+useDefault = true
+
+[allowlist]
+description = "Known-safe placeholder tokens used in this repo's docs/pipeline templates"
+regexes = [
+  '''<[A-Z0-9_]+>''',          # e.g. <AZURE_DEVOPS_PROJECT>, <DEV_SERVICE_CONNECTION>
+  '''\$\{\{\s*parameters\.''', # ADO pipeline expression syntax, not a secret
+]
+paths = [
+  '''(?i)\.example$''',
+]
