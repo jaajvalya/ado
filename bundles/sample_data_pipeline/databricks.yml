@@ -1,0 +1,24 @@
+# Databricks Asset Bundle definition for sample_data_pipeline
+# Rename this folder and bundle name to match a real pipeline, then list its
+# path under `bundlePaths` in azure-pipelines-databricks-bundles.yml
+#
+# DATABRICKS_HOST / DATABRICKS_TOKEN are supplied by the pipeline (via the
+# DevOpsBase deploy template), not defined here. BUNDLE_TARGET from the
+# stage's ADO variable group selects which target below is used (-t flag).
+
+bundle:
+  name: sample_data_pipeline
+
+include:
+  - resources/*.yml
+
+targets:
+  dev:
+    mode: development
+    default: true
+
+  qa:
+    mode: production
+
+  prod:
+    mode: production

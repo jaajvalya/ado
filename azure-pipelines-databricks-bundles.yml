@@ -1,0 +1,59 @@
+# Consumer pipeline: deploys Databricks Asset Bundles in this repo via the
+# shared DevOpsBase reusable pipeline (Dev -> QA -> Prod).
+# See DevOpsBase's databricks-asset-bundle-cicd.md for full behavior/prereqs.
+#
+# TODO before first run:
+#   1. Replace the DevOpsBase `name` below with the real ADO project/repo path
+#      (placeholder used until confirmed with the client).
+#   2. Confirm/override pool, variable group, service connection, and
+#      prodEnvironment names to match this org's DevOpsBase conventions.
+#   3. Create the ADO variable groups referenced below with DATABRICKS_HOST
+#      and BUNDLE_TARGET set for each environment.
+#   4. Create the Prod ADO Environment and configure approvals on it.
+#   5. Rename/add real bundle folders under bundlePaths (each needs its own
+#      databricks.yml) - bundles/sample_data_pipeline is a placeholder.
+
+trigger:
+  branches:
+    include:
+      - main
+  paths:
+    include:
+      - bundles/*
+
+pr:
+  branches:
+    include:
+      - main
+  paths:
+    include:
+      - bundles/*
+
+resources:
+  repositories:
+    - repository: DevOpsBase
+      type: git
+      name: "<AZURE_DEVOPS_PROJECT>/DevOpsBase" # TODO: replace with actual project/repo path
+      ref: main
+
+extends:
+  template: databricks-asset-bundle-cicd-base.yaml@DevOpsBase
+  parameters:
+    deployDev: true
+    deployQa: true
+    deployProd: true
+    bundlePaths:
+      - bundles/sample_data_pipeline # TODO: replace/add real bundle paths
+
+    # Overrides - uncomment and set once confirmed with the DevOps team.
+    # Defaults below are DevOpsBase's own defaults (from another org) and
+    # will not resolve in this org until overridden.
+    # nonProdPool: <NONPROD_AGENT_POOL>
+    # prodPool: <PROD_AGENT_POOL>
+    # variableGroupDev: <DEV_VARIABLE_GROUP>
+    # variableGroupQa: <QA_VARIABLE_GROUP>
+    # variableGroupProd: <PROD_VARIABLE_GROUP>
+    # azureServiceConnectionDev: <DEV_SERVICE_CONNECTION>
+    # azureServiceConnectionQa: <QA_SERVICE_CONNECTION>
+    # azureServiceConnectionProd: <PROD_SERVICE_CONNECTION>
+    # prodEnvironment: PROD
