@@ -1,0 +1,158 @@
+<mxfile host="app.diagrams.net" agent="Claude Code" version="24.0.0" type="device">
+  <diagram id="branch-to-production" name="Branch to Production">
+    <mxGraphModel dx="1200" dy="800" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="900" pageHeight="1100" math="0" shadow="0">
+      <root>
+        <mxCell id="0" />
+        <mxCell id="1" parent="0" />
+
+        <!-- Group backgrounds -->
+        <mxCell id="g1" value="Pull Request Gate" style="rounded=0;whiteSpace=wrap;html=1;fillColor=none;strokeColor=#C9C2B4;dashed=1;verticalAlign=top;align=left;spacingLeft=14;spacingTop=10;fontStyle=1;fontSize=15;fontColor=#1E2430;fontFamily=Segoe UI;" vertex="1" parent="1">
+          <mxGeometry x="0" y="0" width="880" height="1220" as="geometry" />
+        </mxCell>
+        <mxCell id="g2" value="CI/CD Deployment — DevOpsBase template" style="rounded=0;whiteSpace=wrap;html=1;fillColor=none;strokeColor=#C9C2B4;dashed=1;verticalAlign=top;align=left;spacingLeft=14;spacingTop=10;fontStyle=1;fontSize=15;fontColor=#1E2430;fontFamily=Segoe UI;" vertex="1" parent="1">
+          <mxGeometry x="0" y="1240" width="880" height="700" as="geometry" />
+        </mxCell>
+
+        <!-- PR Gate nodes -->
+        <mxCell id="A" value="checkout -b feature/&lt;name&gt;" style="shape=process;whiteSpace=wrap;html=1;fillColor=#F2F0EA;strokeColor=#6B7280;fontColor=#1E2430;fontFamily=Segoe UI;fontSize=12;" vertex="1" parent="1">
+          <mxGeometry x="260" y="40" width="220" height="50" as="geometry" />
+        </mxCell>
+        <mxCell id="B" value="Commit changes" style="shape=process;whiteSpace=wrap;html=1;fillColor=#F2F0EA;strokeColor=#6B7280;fontColor=#1E2430;fontFamily=Segoe UI;fontSize=12;" vertex="1" parent="1">
+          <mxGeometry x="260" y="150" width="220" height="50" as="geometry" />
+        </mxCell>
+        <mxCell id="C" value="Pre-commit secret scan" style="rhombus;whiteSpace=wrap;html=1;fillColor=#FFF7E6;strokeColor=#B8791A;fontColor=#1E2430;fontFamily=Segoe UI;fontSize=12;" vertex="1" parent="1">
+          <mxGeometry x="270" y="260" width="200" height="90" as="geometry" />
+        </mxCell>
+        <mxCell id="D" value="Push branch" style="shape=process;whiteSpace=wrap;html=1;fillColor=#F2F0EA;strokeColor=#6B7280;fontColor=#1E2430;fontFamily=Segoe UI;fontSize=12;" vertex="1" parent="1">
+          <mxGeometry x="260" y="410" width="220" height="50" as="geometry" />
+        </mxCell>
+        <mxCell id="E" value="Open PR &#8594; main" style="shape=process;whiteSpace=wrap;html=1;fillColor=#F2F0EA;strokeColor=#6B7280;fontColor=#1E2430;fontFamily=Segoe UI;fontSize=12;" vertex="1" parent="1">
+          <mxGeometry x="260" y="520" width="220" height="50" as="geometry" />
+        </mxCell>
+        <mxCell id="F" value="Required checks: secret scan + bundle validate" style="rhombus;whiteSpace=wrap;html=1;fillColor=#FFF7E6;strokeColor=#B8791A;fontColor=#1E2430;fontFamily=Segoe UI;fontSize=12;" vertex="1" parent="1">
+          <mxGeometry x="255" y="630" width="230" height="110" as="geometry" />
+        </mxCell>
+        <mxCell id="G" value="Code review" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#EAF7F0;strokeColor=#1F8A5F;fontColor=#1E2430;fontFamily=Segoe UI;fontSize=12;" vertex="1" parent="1">
+          <mxGeometry x="260" y="800" width="220" height="50" as="geometry" />
+        </mxCell>
+        <mxCell id="H" value="Approved?" style="rhombus;whiteSpace=wrap;html=1;fillColor=#FFF7E6;strokeColor=#B8791A;fontColor=#1E2430;fontFamily=Segoe UI;fontSize=12;" vertex="1" parent="1">
+          <mxGeometry x="270" y="910" width="200" height="90" as="geometry" />
+        </mxCell>
+        <mxCell id="K" value="Team Lead: bypass + justification" style="shape=hexagon;perimeter=hexagonPerimeter2;whiteSpace=wrap;html=1;fillColor=#FBEAEA;strokeColor=#B23A3A;dashed=1;fontColor=#1E2430;fontFamily=Segoe UI;fontSize=12;" vertex="1" parent="1">
+          <mxGeometry x="580" y="920" width="260" height="70" as="geometry" />
+        </mxCell>
+        <mxCell id="I" value="Squash and merge to main" style="shape=process;whiteSpace=wrap;html=1;fillColor=#F2F0EA;strokeColor=#6B7280;fontColor=#1E2430;fontFamily=Segoe UI;fontSize=12;" vertex="1" parent="1">
+          <mxGeometry x="260" y="1060" width="220" height="50" as="geometry" />
+        </mxCell>
+        <mxCell id="J" value="Delete branch" style="shape=process;whiteSpace=wrap;html=1;fillColor=#F2F0EA;strokeColor=#6B7280;fontColor=#1E2430;fontFamily=Segoe UI;fontSize=12;" vertex="1" parent="1">
+          <mxGeometry x="260" y="1160" width="220" height="50" as="geometry" />
+        </mxCell>
+
+        <!-- Connector -->
+        <mxCell id="L" value="Pipeline triggers on main" style="shape=process;whiteSpace=wrap;html=1;fillColor=#F2F0EA;strokeColor=#6B7280;fontColor=#1E2430;fontFamily=Segoe UI;fontSize=12;" vertex="1" parent="1">
+          <mxGeometry x="260" y="1290" width="220" height="50" as="geometry" />
+        </mxCell>
+
+        <!-- CD nodes -->
+        <mxCell id="N" value="Deploy to QA (automatic)" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#EAF0FF;strokeColor=#3452C4;fontColor=#1E2430;fontFamily=Segoe UI;fontSize=12;" vertex="1" parent="1">
+          <mxGeometry x="260" y="1400" width="220" height="60" as="geometry" />
+        </mxCell>
+        <mxCell id="M" value="Deploy to Dev (automatic)" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#EAF0FF;strokeColor=#3452C4;fontColor=#1E2430;fontFamily=Segoe UI;fontSize=12;" vertex="1" parent="1">
+          <mxGeometry x="580" y="1400" width="220" height="60" as="geometry" />
+        </mxCell>
+        <mxCell id="O" value="QA succeeded?" style="rhombus;whiteSpace=wrap;html=1;fillColor=#FFF7E6;strokeColor=#B8791A;fontColor=#1E2430;fontFamily=Segoe UI;fontSize=12;" vertex="1" parent="1">
+          <mxGeometry x="270" y="1510" width="200" height="90" as="geometry" />
+        </mxCell>
+        <mxCell id="P" value="Stage fails — fix and re-merge" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#FBEAEA;strokeColor=#B23A3A;dashed=1;fontColor=#1E2430;fontFamily=Segoe UI;fontSize=12;" vertex="1" parent="1">
+          <mxGeometry x="580" y="1525" width="240" height="60" as="geometry" />
+        </mxCell>
+        <mxCell id="Q" value="Waiting for approval: Deploy_Prod" style="shape=hexagon;perimeter=hexagonPerimeter2;whiteSpace=wrap;html=1;fillColor=#EAF7F0;strokeColor=#1F8A5F;fontColor=#1E2430;fontFamily=Segoe UI;fontSize=12;" vertex="1" parent="1">
+          <mxGeometry x="240" y="1650" width="260" height="80" as="geometry" />
+        </mxCell>
+        <mxCell id="R" value="Deployment stopped" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#FBEAEA;strokeColor=#B23A3A;dashed=1;fontColor=#1E2430;fontFamily=Segoe UI;fontSize=12;" vertex="1" parent="1">
+          <mxGeometry x="580" y="1660" width="220" height="60" as="geometry" />
+        </mxCell>
+        <mxCell id="S" value="Deploy to Prod" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#EAF0FF;strokeColor=#3452C4;fontColor=#1E2430;fontFamily=Segoe UI;fontSize=12;" vertex="1" parent="1">
+          <mxGeometry x="260" y="1780" width="220" height="60" as="geometry" />
+        </mxCell>
+        <mxCell id="T" value="Smoke test / monitor" style="shape=process;whiteSpace=wrap;html=1;fillColor=#F2F0EA;strokeColor=#6B7280;fontColor=#1E2430;fontFamily=Segoe UI;fontSize=12;" vertex="1" parent="1">
+          <mxGeometry x="260" y="1880" width="220" height="50" as="geometry" />
+        </mxCell>
+
+        <!-- Edges: PR Gate main chain -->
+        <mxCell id="e1" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;strokeColor=#6B7280;fontFamily=Segoe UI;fontSize=11;fontColor=#565F71;" edge="1" parent="1" source="A" target="B">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="e2" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;strokeColor=#6B7280;fontFamily=Segoe UI;fontSize=11;fontColor=#565F71;" edge="1" parent="1" source="B" target="C">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="e3" value="secret found" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;exitX=0;exitY=0.5;exitDx=0;exitDy=0;entryX=0;entryY=0.5;entryDx=0;entryDy=0;strokeColor=#B23A3A;fontColor=#B23A3A;fontFamily=Segoe UI;fontSize=11;" edge="1" parent="1" source="C" target="B">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="e4" value="clean" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;strokeColor=#1F8A5F;fontColor=#1F8A5F;fontFamily=Segoe UI;fontSize=11;" edge="1" parent="1" source="C" target="D">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="e5" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;strokeColor=#6B7280;fontFamily=Segoe UI;fontSize=11;" edge="1" parent="1" source="D" target="E">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="e6" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;strokeColor=#6B7280;fontFamily=Segoe UI;fontSize=11;" edge="1" parent="1" source="E" target="F">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="e7" value="fails" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;exitX=0;exitY=0.5;exitDx=0;exitDy=0;entryX=0;entryY=0.5;entryDx=0;entryDy=0;strokeColor=#B23A3A;fontColor=#B23A3A;fontFamily=Segoe UI;fontSize=11;" edge="1" parent="1" source="F" target="B">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="e8" value="passes" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;strokeColor=#1F8A5F;fontColor=#1F8A5F;fontFamily=Segoe UI;fontSize=11;" edge="1" parent="1" source="F" target="G">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="e9" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;strokeColor=#6B7280;fontFamily=Segoe UI;fontSize=11;" edge="1" parent="1" source="G" target="H">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="e10" value="changes requested" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;exitX=0;exitY=0.5;exitDx=0;exitDy=0;entryX=0;entryY=0.5;entryDx=0;entryDy=0;strokeColor=#B23A3A;fontColor=#B23A3A;fontFamily=Segoe UI;fontSize=11;" edge="1" parent="1" source="H" target="B">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="e11" value="approved" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;strokeColor=#1F8A5F;fontColor=#1F8A5F;fontFamily=Segoe UI;fontSize=11;" edge="1" parent="1" source="H" target="I">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="e12" value="emergency only" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;dashed=1;strokeColor=#B23A3A;fontColor=#B23A3A;fontFamily=Segoe UI;fontSize=11;" edge="1" parent="1" source="H" target="K">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="e13" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;dashed=1;strokeColor=#B23A3A;fontFamily=Segoe UI;fontSize=11;" edge="1" parent="1" source="K" target="I">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="e14" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;strokeColor=#6B7280;fontFamily=Segoe UI;fontSize=11;" edge="1" parent="1" source="I" target="J">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="e15" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;strokeColor=#6B7280;fontFamily=Segoe UI;fontSize=11;" edge="1" parent="1" source="J" target="L">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+
+        <!-- Edges: CD -->
+        <mxCell id="e16" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;strokeColor=#6B7280;fontFamily=Segoe UI;fontSize=11;" edge="1" parent="1" source="L" target="N">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="e17" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;strokeColor=#6B7280;fontFamily=Segoe UI;fontSize=11;" edge="1" parent="1" source="L" target="M">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="e18" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;strokeColor=#6B7280;fontFamily=Segoe UI;fontSize=11;" edge="1" parent="1" source="N" target="O">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="e19" value="no" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;strokeColor=#B23A3A;fontColor=#B23A3A;fontFamily=Segoe UI;fontSize=11;" edge="1" parent="1" source="O" target="P">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="e20" value="yes" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;strokeColor=#1F8A5F;fontColor=#1F8A5F;fontFamily=Segoe UI;fontSize=11;" edge="1" parent="1" source="O" target="Q">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="e21" value="reject" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;strokeColor=#B23A3A;fontColor=#B23A3A;fontFamily=Segoe UI;fontSize=11;" edge="1" parent="1" source="Q" target="R">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="e22" value="approve" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;strokeColor=#1F8A5F;fontColor=#1F8A5F;fontFamily=Segoe UI;fontSize=11;" edge="1" parent="1" source="Q" target="S">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="e23" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;strokeColor=#6B7280;fontFamily=Segoe UI;fontSize=11;" edge="1" parent="1" source="S" target="T">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+
+      </root>
+    </mxGraphModel>
+  </diagram>
+</mxfile>
